@@ -179,7 +179,17 @@ class PHPCtags
             $name = $node->name;
             $line = $node->getLine();
             $access = $this->getNodeAccess($node);
+
+            $returnType = $node->getReturnType();
+
+            if ($returnType !== null) {
+                $this->struct($returnType, FALSE, array('function' => $name));
+            }
+
             foreach ($node as $subNode) {
+                if ($subNode === $returnType) {
+                    continue;
+                }
                 $this->struct($subNode, FALSE, array('method' => $name));
             }
         } elseif ($node instanceof If_) {
@@ -208,7 +218,17 @@ class PHPCtags
             $kind = 'f';
             $name = $node->name;
             $line = $node->getLine();
+
+            $returnType = $node->getReturnType();
+
+            if ($returnType !== null) {
+                $this->struct($returnType, FALSE, array('function' => $name));
+            }
+
             foreach ($node as $subNode) {
+                if ($subNode === $returnType) {
+                    continue;
+                }
                 $this->struct($subNode, FALSE, array('function' => $name));
             }
         } elseif ($node instanceof Interface_) {
@@ -254,6 +274,18 @@ class PHPCtags
                     $name = $node->value;
                     $line = $node->getLine();
                     break;
+            }
+        } elseif ($node instanceof Name && !empty($parent)) {
+            if (isset($parent['function'])) {
+                $kind = 'c';
+                $name = $node->toString();
+                $line = $node->getLine();
+            }
+        } elseif ($node instanceof NullableType && !empty($parent)) {
+            if ($node->type instanceof Name) {
+                $kind = 'c';
+                $name = $node->type->toString();
+                $line = $node->type->getLine();
             }
         } else {
             // we don't care the rest of them.
