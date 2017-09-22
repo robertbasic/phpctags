@@ -117,4 +117,118 @@ EOS
             'function:foo'
         );
     }
+
+    /**
+     * @test
+     */
+    public function itTagsFQNClassFromFunctionReturnTypeHint()
+    {
+        $this->givenSourceFile('TypeHints.php', <<<'EOS'
+<?php declare(strict_types=1);
+
+function returns_a_class(): Foo\MyClass
+{
+}
+EOS
+        );
+
+        $this->runPHPCtags();
+
+        $this->assertTagsFileHeaderIsCorrect();
+        $this->assertNumberOfTagsInTagsFileIs(2);
+        $this->assertTagsFileContainsTag(
+            'TypeHints.php',
+            'Foo\MyClass',
+            self::KIND_CLASS,
+            3,
+            'function:returns_a_class'
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function itTagsFQNClassFromNullableFunctionReturnTypeHint()
+    {
+        $this->givenSourceFile('TypeHints.php', <<<'EOS'
+<?php declare(strict_types=1);
+
+function returns_a_class(): ?Foo\MyClass
+{
+}
+EOS
+        );
+
+        $this->runPHPCtags();
+
+        $this->assertTagsFileHeaderIsCorrect();
+        $this->assertNumberOfTagsInTagsFileIs(2);
+        $this->assertTagsFileContainsTag(
+            'TypeHints.php',
+            'Foo\MyClass',
+            self::KIND_CLASS,
+            3,
+            'function:returns_a_class'
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function itTagsFQNClassFromClassMethodReturnTypeHint()
+    {
+        $this->givenSourceFile('TypeHints.php', <<<'EOS'
+<?php declare(strict_types=1);
+
+class MyClass
+{
+    public function foo(): Bar\Baz
+    {
+    }
+}
+EOS
+        );
+
+        $this->runPHPCtags();
+
+        $this->assertTagsFileHeaderIsCorrect();
+        $this->assertNumberOfTagsInTagsFileIs(3);
+        $this->assertTagsFileContainsTag(
+            'TypeHints.php',
+            'Bar\Baz',
+            self::KIND_CLASS,
+            5,
+            'function:foo'
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function itTagsFQNClassFromNullableClassMethodReturnTypeHint()
+    {
+        $this->givenSourceFile('TypeHints.php', <<<'EOS'
+<?php declare(strict_types=1);
+
+class MyClass
+{
+    public function foo(): ?Bar\Baz
+    {
+    }
+}
+EOS
+        );
+
+        $this->runPHPCtags();
+
+        $this->assertTagsFileHeaderIsCorrect();
+        $this->assertNumberOfTagsInTagsFileIs(3);
+        $this->assertTagsFileContainsTag(
+            'TypeHints.php',
+            'Bar\Baz',
+            self::KIND_CLASS,
+            5,
+            'function:foo'
+        );
+    }
 }
