@@ -1,4 +1,29 @@
 <?php
+
+use PhpParser\Lexer;
+use PhpParser\Node\Expr\Assign;
+use PhpParser\Node\Expr\AssignRef;
+use PhpParser\Node\Expr\FuncCall;
+use PhpParser\Node\Expr\Variable;
+use PhpParser\Node\Name;
+use PhpParser\Node\NullableType;
+use PhpParser\Node\Stmt\Class_;
+use PhpParser\Node\Stmt\ClassConst;
+use PhpParser\Node\Stmt\ClassMethod;
+use PhpParser\Node\Stmt\Const_;
+use PhpParser\Node\Stmt\Declare_;
+use PhpParser\Node\Stmt\Function_;
+use PhpParser\Node\Stmt\Global_;
+use PhpParser\Node\Stmt\If_;
+use PhpParser\Node\Stmt\Interface_;
+use PhpParser\Node\Stmt\Namespace_;
+use PhpParser\Node\Stmt\Property;
+use PhpParser\Node\Stmt\Static_;
+use PhpParser\Node\Stmt\Trait_;
+use PhpParser\Node\Stmt\TryCatch;
+use PhpParser\NodeDumper;
+use PhpParser\ParserFactory;
+
 class PHPCtags
 {
     const VERSION = '0.6.1';
@@ -28,7 +53,8 @@ class PHPCtags
 
     public function __construct($options)
     {
-        $this->mParser = new PHPParser_Parser(new PHPParser_Lexer);
+        $lexer = new Lexer();
+        $this->mParser = (new ParserFactory)->create(ParserFactory::PREFER_PHP7, $lexer);
         $this->mLines = array();
         $this->mOptions = $options;
         $this->filecount = 0;
@@ -128,7 +154,7 @@ class PHPCtags
             foreach ($node as $subNode) {
                 $this->struct($subNode);
             }
-        } elseif ($node instanceof PHPParser_Node_Stmt_Class) {
+        } elseif ($node instanceof Class_) {
             $kind = 'c';
             $name = $node->name;
             $extends = $node->extends;
@@ -137,18 +163,18 @@ class PHPCtags
             foreach ($node as $subNode) {
                 $this->struct($subNode, FALSE, array('class' => $name));
             }
-        } elseif ($node instanceof PHPParser_Node_Stmt_Property) {
+        } elseif ($node instanceof Property) {
             $kind = 'p';
             $prop = $node->props[0];
             $name = $prop->name;
             $line = $prop->getLine();
             $access = $this->getNodeAccess($node);
-        } elseif ($node instanceof PHPParser_Node_Stmt_ClassConst) {
+        } elseif ($node instanceof ClassConst) {
             $kind = 'd';
             $cons = $node->consts[0];
             $name = $cons->name;
             $line = $cons->getLine();
-        } elseif ($node instanceof PHPParser_Node_Stmt_ClassMethod) {
+        } elseif ($node instanceof ClassMethod) {
             $kind = 'm';
             $name = $node->name;
             $line = $node->getLine();
@@ -156,71 +182,71 @@ class PHPCtags
             foreach ($node as $subNode) {
                 $this->struct($subNode, FALSE, array('method' => $name));
             }
-        } elseif ($node instanceof PHPParser_Node_Stmt_If) {
+        } elseif ($node instanceof If_) {
             foreach ($node as $subNode) {
                 $this->struct($subNode);
             }
-        } elseif ($node instanceof PHPParser_Node_Stmt_Const) {
+        } elseif ($node instanceof Const_) {
             $kind = 'd';
             $cons = $node->consts[0];
             $name = $cons->name;
             $line = $node->getLine();
-        } elseif ($node instanceof PHPParser_Node_Stmt_Global) {
+        } elseif ($node instanceof Global_) {
             $kind = 'v';
             $prop = $node->vars[0];
             $name = $prop->name;
             $line = $node->getLine();
-        } elseif ($node instanceof PHPParser_Node_Stmt_Static) {
+        } elseif ($node instanceof Static_) {
             //@todo
-        } elseif ($node instanceof PHPParser_Node_Stmt_Declare) {
+        } elseif ($node instanceof Declare_) {
             //@todo
-        } elseif ($node instanceof PHPParser_Node_Stmt_TryCatch) {
+        } elseif ($node instanceof TryCatch) {
             foreach ($node as $subNode) {
                 $this->struct($subNode);
             }
-        } elseif ($node instanceof PHPParser_Node_Stmt_Function) {
+        } elseif ($node instanceof Function_) {
             $kind = 'f';
             $name = $node->name;
             $line = $node->getLine();
             foreach ($node as $subNode) {
                 $this->struct($subNode, FALSE, array('function' => $name));
             }
-        } elseif ($node instanceof PHPParser_Node_Stmt_Interface) {
+        } elseif ($node instanceof Interface_) {
             $kind = 'i';
             $name = $node->name;
             $line = $node->getLine();
             foreach ($node as $subNode) {
                 $this->struct($subNode, FALSE, array('interface' => $name));
             }
-        } elseif ($node instanceof PHPParser_Node_Stmt_Trait ) {
+        } elseif ($node instanceof Trait_) {
             $kind = 't';
             $name = $node->name;
             $line = $node->getLine();
             foreach ($node as $subNode) {
                 $this->struct($subNode, FALSE, array('trait' => $name));
             }
-        } elseif ($node instanceof PHPParser_Node_Stmt_Namespace) {
+        } elseif ($node instanceof Namespace_) {
             $kind = 'n';
             $name = $node->name;
             $line = $node->getLine();
             foreach ($node as $subNode) {
                 $this->struct($subNode, FALSE, array('namespace' => $name));
             }
-        } elseif ($node instanceof PHPParser_Node_Expr_Assign) {
+        } elseif ($node instanceof Assign) {
             if (isset($node->var->name) && is_string($node->var->name)) {
                 $kind = 'v';
                 $node = $node->var;
                 $name = $node->name;
                 $line = $node->getLine();
             }
-        } elseif ($node instanceof PHPParser_Node_Expr_AssignRef) {
+        } elseif ($node instanceof AssignRef) {
             if (isset($node->var->name) && is_string($node->var->name)) {
                 $kind = 'v';
                 $node = $node->var;
                 $name = $node->name;
                 $line = $node->getLine();
             }
-        } elseif ($node instanceof PHPParser_Node_Expr_FuncCall) {
+        } elseif ($node instanceof FuncCall) {
             switch ($node->name) {
                 case 'define':
                     $kind = 'd';
@@ -274,7 +300,7 @@ class PHPCtags
             if (empty($struct['name']) || empty($struct['line']) || empty($struct['kind']))
                 return;
 
-            if  ($struct['name'] instanceof PHPParser_Node_Expr_Variable ){
+            if  ($struct['name'] instanceof Variable){
                 $str .= $struct['name']->name;
             }else{
                 $str .= $struct['name'];
