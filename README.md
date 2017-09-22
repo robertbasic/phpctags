@@ -1,5 +1,9 @@
 phpctags
 ========
+
+[NOTE] This branch is upgraded to PHP-Parser 3.x branch and supports argument
+and return type hints, to some extent. Use at your own risk.
+
 Master  [![Build Status](https://travis-ci.org/vim-php/phpctags.svg)](https://travis-ci.org/vim-php/phpctags?branch=master)  
 
 An enhanced php [ctags](http://ctags.sourceforge.net/) index file generator
