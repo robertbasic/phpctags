@@ -7,6 +7,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Name;
 use PhpParser\Node\NullableType;
+use PhpParser\Node\Param;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassConst;
 use PhpParser\Node\Stmt\ClassMethod;
@@ -276,7 +277,7 @@ class PHPCtags
                     break;
             }
         } elseif ($node instanceof Name && !empty($parent)) {
-            if (isset($parent['function'])) {
+            if (isset($parent['function']) || isset($parent['param'])) {
                 $kind = 'c';
                 $name = $node->toString();
                 $line = $node->getLine();
@@ -286,6 +287,13 @@ class PHPCtags
                 $kind = 'c';
                 $name = $node->type->toString();
                 $line = $node->type->getLine();
+            }
+        } elseif ($node instanceof Param) {
+            if ($node->type instanceof Name) {
+                $this->struct($node->type, FALSE, array('param' => $node->name));
+            }
+            if ($node->type instanceof NullableType) {
+                $this->struct($node->type, FALSE, array('param' => $node->name));
             }
         } else {
             // we don't care the rest of them.

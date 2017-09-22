@@ -231,4 +231,232 @@ EOS
             'function:foo'
         );
     }
+
+    /**
+     * @test
+     */
+    public function itTagsClassFromFunctionArgumentTypeHint()
+    {
+        $this->givenSourceFile('TypeHints.php', <<<'EOS'
+<?php declare(strict_types=1);
+
+function returns_a_class(MyClass $class)
+{
+}
+EOS
+        );
+
+        $this->runPHPCtags();
+
+        $this->assertTagsFileHeaderIsCorrect();
+        $this->assertNumberOfTagsInTagsFileIs(2);
+        $this->assertTagsFileContainsTag(
+            'TypeHints.php',
+            'MyClass',
+            self::KIND_CLASS,
+            3,
+            'param:class'
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function itTagsClassFromNullableFunctionArgumentTypeHint()
+    {
+        $this->givenSourceFile('TypeHints.php', <<<'EOS'
+<?php declare(strict_types=1);
+
+function returns_a_class(?MyClass $class)
+{
+}
+EOS
+        );
+
+        $this->runPHPCtags();
+
+        $this->assertTagsFileHeaderIsCorrect();
+        $this->assertNumberOfTagsInTagsFileIs(2);
+        $this->assertTagsFileContainsTag(
+            'TypeHints.php',
+            'MyClass',
+            self::KIND_CLASS,
+            3,
+            'param:class'
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function itTagsClassFromClassMethodArgumentTypeHint()
+    {
+        $this->givenSourceFile('TypeHints.php', <<<'EOS'
+<?php declare(strict_types=1);
+
+class MyClass
+{
+    public function foo(Bar $class)
+    {
+    }
+}
+EOS
+        );
+
+        $this->runPHPCtags();
+
+        $this->assertTagsFileHeaderIsCorrect();
+        $this->assertNumberOfTagsInTagsFileIs(3);
+        $this->assertTagsFileContainsTag(
+            'TypeHints.php',
+            'Bar',
+            self::KIND_CLASS,
+            5,
+            'param:class'
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function itTagsClassFromNullableClassMethodArgumentTypeHint()
+    {
+        $this->givenSourceFile('TypeHints.php', <<<'EOS'
+<?php declare(strict_types=1);
+
+class MyClass
+{
+    public function foo(?Bar $class)
+    {
+    }
+}
+EOS
+        );
+
+        $this->runPHPCtags();
+
+        $this->assertTagsFileHeaderIsCorrect();
+        $this->assertNumberOfTagsInTagsFileIs(3);
+        $this->assertTagsFileContainsTag(
+            'TypeHints.php',
+            'Bar',
+            self::KIND_CLASS,
+            5,
+            'param:class'
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function itTagsFQNClassFromFunctionArgumentTypeHint()
+    {
+        $this->givenSourceFile('TypeHints.php', <<<'EOS'
+<?php declare(strict_types=1);
+
+function returns_a_class(Foo\MyClass $class)
+{
+}
+EOS
+        );
+
+        $this->runPHPCtags();
+
+        $this->assertTagsFileHeaderIsCorrect();
+        $this->assertNumberOfTagsInTagsFileIs(2);
+        $this->assertTagsFileContainsTag(
+            'TypeHints.php',
+            'Foo\MyClass',
+            self::KIND_CLASS,
+            3,
+            'param:class'
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function itTagsFQNClassFromNullableFunctionArgumentTypeHint()
+    {
+        $this->givenSourceFile('TypeHints.php', <<<'EOS'
+<?php declare(strict_types=1);
+
+function returns_a_class(?Foo\MyClass $class)
+{
+}
+EOS
+        );
+
+        $this->runPHPCtags();
+
+        $this->assertTagsFileHeaderIsCorrect();
+        $this->assertNumberOfTagsInTagsFileIs(2);
+        $this->assertTagsFileContainsTag(
+            'TypeHints.php',
+            'Foo\MyClass',
+            self::KIND_CLASS,
+            3,
+            'param:class'
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function itTagsFQNClassFromClassMethodArgumentTypeHint()
+    {
+        $this->givenSourceFile('TypeHints.php', <<<'EOS'
+<?php declare(strict_types=1);
+
+class MyClass
+{
+    public function foo(Bar\Baz $class)
+    {
+    }
+}
+EOS
+        );
+
+        $this->runPHPCtags();
+
+        $this->assertTagsFileHeaderIsCorrect();
+        $this->assertNumberOfTagsInTagsFileIs(3);
+        $this->assertTagsFileContainsTag(
+            'TypeHints.php',
+            'Bar\Baz',
+            self::KIND_CLASS,
+            5,
+            'param:class'
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function itTagsFQNClassFromNullableClassMethodArgumentTypeHint()
+    {
+        $this->givenSourceFile('TypeHints.php', <<<'EOS'
+<?php declare(strict_types=1);
+
+class MyClass
+{
+    public function foo(?Bar\Baz $class)
+    {
+    }
+}
+EOS
+        );
+
+        $this->runPHPCtags();
+
+        $this->assertTagsFileHeaderIsCorrect();
+        $this->assertNumberOfTagsInTagsFileIs(3);
+        $this->assertTagsFileContainsTag(
+            'TypeHints.php',
+            'Bar\Baz',
+            self::KIND_CLASS,
+            5,
+            'param:class'
+        );
+    }
 }
